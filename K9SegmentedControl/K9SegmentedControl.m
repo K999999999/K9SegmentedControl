@@ -7,7 +7,7 @@
 //
 
 #import "K9SegmentedControl.h"
-#import <Masonry.h>
+#import "Masonry.h"
 
 #ifndef dispatch_main_async_safe
 #define dispatch_main_async_safe(block)\

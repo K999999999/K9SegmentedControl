@@ -94,8 +94,8 @@
 		C9EDA6E41FE3DE1C00954C43 /* K9SegmentedControl */ = {
 			isa = PBXGroup;
 			children = (
-				C9EDA6E51FE3DE1C00954C43 /* K9SegmentedControl.m */,
 				C9EDA6E61FE3DE1C00954C43 /* K9SegmentedControl.h */,
+				C9EDA6E51FE3DE1C00954C43 /* K9SegmentedControl.m */,
 			);
 			path = K9SegmentedControl;
 			sourceTree = "<group>";
