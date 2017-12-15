@@ -7,7 +7,7 @@
 //
 
 #import "ViewController.h"
-#import <Masonry.h>
+#import "Masonry.h"
 #import "K9SegmentedControl.h"
 
 @interface ViewController () <UICollectionViewDataSource, UICollectionViewDelegate, K9SegmentedControlDataSource, K9SegmentedControlDelegate>

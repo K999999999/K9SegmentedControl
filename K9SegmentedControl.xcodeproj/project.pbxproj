@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		C9EDA6DD1FE3DDFD00954C43 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9EDA6D31FE3DDFD00954C43 /* Assets.xcassets */; };
 		C9EDA6DE1FE3DDFD00954C43 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EDA6D41FE3DDFD00954C43 /* ViewController.m */; };
-		C9EDA6DF1FE3DDFD00954C43 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9EDA6D51FE3DDFD00954C43 /* LaunchScreen.storyboard */; };
-		C9EDA6E01FE3DDFD00954C43 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9EDA6D71FE3DDFD00954C43 /* Main.storyboard */; };
 		C9EDA6E11FE3DDFD00954C43 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EDA6D91FE3DDFD00954C43 /* main.m */; };
 		C9EDA6E21FE3DDFD00954C43 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EDA6DA1FE3DDFD00954C43 /* AppDelegate.m */; };
 		C9EDA6E71FE3DE1C00954C43 /* K9SegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EDA6E51FE3DE1C00954C43 /* K9SegmentedControl.m */; };
@@ -24,8 +22,6 @@
 		C9EDA6D21FE3DDFD00954C43 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		C9EDA6D31FE3DDFD00954C43 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C9EDA6D41FE3DDFD00954C43 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		C9EDA6D61FE3DDFD00954C43 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		C9EDA6D81FE3DDFD00954C43 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		C9EDA6D91FE3DDFD00954C43 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C9EDA6DA1FE3DDFD00954C43 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		C9EDA6DB1FE3DDFD00954C43 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -83,8 +79,6 @@
 				C9EDA6DC1FE3DDFD00954C43 /* ViewController.h */,
 				C9EDA6D41FE3DDFD00954C43 /* ViewController.m */,
 				C9EDA6D31FE3DDFD00954C43 /* Assets.xcassets */,
-				C9EDA6D51FE3DDFD00954C43 /* LaunchScreen.storyboard */,
-				C9EDA6D71FE3DDFD00954C43 /* Main.storyboard */,
 				C9EDA6D91FE3DDFD00954C43 /* main.m */,
 				C9EDA6DB1FE3DDFD00954C43 /* Info.plist */,
 			);
@@ -169,9 +163,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C9EDA6E01FE3DDFD00954C43 /* Main.storyboard in Resources */,
 				C9EDA6DD1FE3DDFD00954C43 /* Assets.xcassets in Resources */,
-				C9EDA6DF1FE3DDFD00954C43 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,25 +231,6 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXVariantGroup section */
-		C9EDA6D51FE3DDFD00954C43 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				C9EDA6D61FE3DDFD00954C43 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-		C9EDA6D71FE3DDFD00954C43 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				C9EDA6D81FE3DDFD00954C43 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
-
 /* Begin XCBuildConfiguration section */
 		C9EDA6CC1FE3DD3500954C43 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -307,7 +280,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -356,7 +329,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -368,10 +341,11 @@
 			baseConfigurationReference = F425D9EB038D1D940DBA4BEE /* Pods-K9SegmentedControl.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KX8F4VQ9VR;
 				INFOPLIST_FILE = K9SegmentedControlDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = K999999999.K9SegmentedControl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -384,10 +358,11 @@
 			baseConfigurationReference = 816C48D879F55178509A1DE0 /* Pods-K9SegmentedControl.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KX8F4VQ9VR;
 				INFOPLIST_FILE = K9SegmentedControlDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = K999999999.K9SegmentedControl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
