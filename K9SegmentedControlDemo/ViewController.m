@@ -12,14 +12,16 @@
 
 @interface ViewController () <UICollectionViewDataSource, UICollectionViewDelegate, K9SegmentedControlDataSource, K9SegmentedControlDelegate>
 
-@property (nonatomic)           BOOL                        showPoint;
+@property (nonatomic)           BOOL                        sameWidth;
 @property (nonatomic)           BOOL                        scrollByUser;
 @property (nonatomic, strong)   NSArray                     *titleArray;
 @property (nonatomic, strong)   NSArray                     *colorArray;
+@property (nonatomic, strong)   NSMutableDictionary         *pointDic;
 
 @property (nonatomic, strong)   K9SegmentedControl          *segmentedControl;
 @property (nonatomic, strong)   UICollectionViewFlowLayout  *flowLayout;
 @property (nonatomic, strong)   UICollectionView            *collectionView;
+@property (nonatomic, strong)   UISwitch                    *switchView;
 
 @end
 
@@ -30,14 +32,8 @@
 - (void)viewDidLoad {
     
     [super viewDidLoad];
-    self.showPoint = YES;
+    self.sameWidth = NO;
     self.scrollByUser = NO;
-    [K9SegmentedControlStyle shareStyle].titleColor = [UIColor grayColor];
-    [K9SegmentedControlStyle shareStyle].selectedTitleColor = [UIColor blackColor];
-    [K9SegmentedControlStyle shareStyle].autoAdjustSegmentWidth = YES;
-    [K9SegmentedControlStyle shareStyle].autoAdjustIndicatorWidth = YES;
-    [K9SegmentedControlStyle shareStyle].indicatorColor = [UIColor blueColor];
-    [K9SegmentedControlStyle shareStyle].pointOffset = UIOffsetMake(-2.f, 4.f);
     [self configViews];
 }
 
@@ -48,6 +44,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     [self configSegmentedControl];
     [self configCollectionView];
+    [self configSwitchView];
 }
 
 - (void)configSegmentedControl {
@@ -76,6 +73,20 @@
         
         make.center.equalTo(self.view);
         make.width.height.equalTo(self.view.mas_width);
+    }];
+}
+
+- (void)configSwitchView {
+    
+    if (self.switchView.superview) {
+        return;
+    }
+    
+    [self.view addSubview:self.switchView];
+    [self.switchView mas_makeConstraints:^(MASConstraintMaker *make) {
+        
+        make.bottom.equalTo(self.view).with.offset(-50.f);
+        make.centerX.equalTo(self.view);
     }];
 }
 
@@ -135,28 +146,65 @@
     return [segmentedControl attributedTitleForTitle:self.titleArray[index] state:state];
 }
 
-- (BOOL)segmentedControl:(K9SegmentedControl *)segmentedControl shouldShowPointAtIndex:(NSInteger)index {
+- (K9SegmentedControlStyle *)styleForSegmentedControl:(K9SegmentedControl *)segmentedControl {
     
-    if (3 == index) {
-        return YES;
+    K9SegmentedControlStyle *style = [[K9SegmentedControlStyle alloc] initWithDefaultStyle];
+    style.titleColor = [UIColor grayColor];
+    if (self.sameWidth) {
+        
+        style.segmentWidth = floor([UIScreen mainScreen].bounds.size.width / 3.f);
+        style.pointOffset = UIOffsetMake(5.f - floor([UIScreen mainScreen].bounds.size.width / 6.f), 4.f);
+        style.borderSpacingVertical = 10.f;
+    } else {
+        
+        style.autoAdjustSegmentWidth = YES;
+        style.autoAdjustIndicatorWidth = YES;
+        style.autoIndicatorSpacing = 10.f;
+        style.pointOffset = UIOffsetMake(-2.f, 4.f);
     }
-    if (6 == index) {
-        return self.showPoint;
+    style.indicatorColor = [UIColor blueColor];
+    
+    return style;
+}
+
+- (BOOL)segmentedControl:(K9SegmentedControl *)segmentedControl shouldShowPointAtIndex:(NSInteger)index {
+    return [[self.pointDic objectForKey:@(index)] boolValue];
+}
+
+- (K9SegmentedControlBorderType)borderTypeForSegmentedControl:(K9SegmentedControl *)segmentedControl atIndex:(NSInteger)index {
+    
+    if (self.sameWidth) {
+        return (index + 1 != self.titleArray.count) ? K9SegmentedControlBorderTypeTop | K9SegmentedControlBorderTypeBottom | K9SegmentedControlBorderTypeRight : K9SegmentedControlBorderTypeTop | K9SegmentedControlBorderTypeBottom;
+    } else {
+        return K9SegmentedControlBorderTypeBottom;
     }
-    return NO;
 }
 
 #pragma mark <K9SegmentedControlDelegate>
 
 - (void)segmentedControl:(K9SegmentedControl *)segmentedControl willSelectSegmentAtIndex:(NSInteger)index {
-    
-    if (6 == index) {
-        self.showPoint = NO;
-    }
+    [self.pointDic setObject:@(NO) forKey:@(index)];
+}
+
+- (void)segmentedControl:(K9SegmentedControl *)segmentedControl didSelectSegmentAtIndex:(NSInteger)index {
+    [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
 }
 
 - (void)segmentedControl:(K9SegmentedControl *)segmentedControl shouldChangePageProgress:(float)pageProgress indicator:(UIView *)indicatorView {
     self.collectionView.contentOffset = CGPointMake(self.collectionView.contentSize.width * pageProgress, 0.f);
+}
+
+#pragma mark - Action Methods
+
+- (void)onSwitchChange:(UISwitch *)sender {
+    
+    self.sameWidth = sender.isOn;
+    _titleArray = nil;
+    _colorArray = nil;
+    _pointDic = nil;
+    [self.segmentedControl reloadData];
+    [self.collectionView reloadData];
+    
 }
 
 #pragma mark - Getters
@@ -164,7 +212,12 @@
 - (NSArray *)titleArray {
     
     if (!_titleArray) {
-        _titleArray = @[@"r", @"yellow", @"b", @"orange", @"purple", @"brown", @"gray", @"g", @"black"];
+        
+        if (self.sameWidth) {
+            _titleArray = @[@"R", @"B", @"G"];
+        } else {
+            _titleArray = @[@"black", @"darkGray", @"lightGray", @"white", @"gray", @"red", @"green", @"blue", @"cyan", @"yellow", @"magenta", @"orange", @"purple", @"brown"];
+        }
     }
     return _titleArray;
 }
@@ -173,9 +226,29 @@
     
     if (!_colorArray) {
         
-        _colorArray = @[[UIColor redColor], [UIColor yellowColor], [UIColor blueColor], [UIColor orangeColor], [UIColor purpleColor], [UIColor brownColor], [UIColor grayColor], [UIColor greenColor], [UIColor blackColor]];
+        if (self.sameWidth) {
+            _colorArray = @[[UIColor redColor], [UIColor blueColor], [UIColor greenColor]];
+        } else {
+            _colorArray = @[[UIColor blackColor], [UIColor darkGrayColor], [UIColor lightGrayColor], [UIColor whiteColor], [UIColor grayColor], [UIColor redColor], [UIColor greenColor], [UIColor blueColor], [UIColor cyanColor], [UIColor yellowColor], [UIColor magentaColor], [UIColor orangeColor], [UIColor purpleColor], [UIColor brownColor]];
+        }
     }
     return _colorArray;
+}
+
+- (NSMutableDictionary *)pointDic {
+    
+    if (!_pointDic) {
+        
+        _pointDic = [NSMutableDictionary dictionary];
+        if (self.sameWidth) {
+            [_pointDic setObject:@(YES) forKey:@(1)];
+        } else {
+            [_pointDic setObject:@(YES) forKey:@(5)];
+            [_pointDic setObject:@(YES) forKey:@(6)];
+            [_pointDic setObject:@(YES) forKey:@(7)];
+        }
+    }
+    return _pointDic;
 }
 
 - (K9SegmentedControl *)segmentedControl {
@@ -218,6 +291,16 @@
         _collectionView.delegate = self;
     }
     return _collectionView;
+}
+
+- (UISwitch *)switchView {
+    
+    if (!_switchView) {
+        
+        _switchView = [[UISwitch alloc] init];
+        [_switchView addTarget:self action:@selector(onSwitchChange:) forControlEvents:UIControlEventValueChanged];
+    }
+    return _switchView;
 }
 
 @end

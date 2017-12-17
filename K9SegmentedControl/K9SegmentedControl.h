@@ -8,39 +8,53 @@
 
 #import <UIKit/UIKit.h>
 
+typedef NS_OPTIONS(NSInteger, K9SegmentedControlBorderType) {
+    
+    K9SegmentedControlBorderTypeNone = 0,
+    K9SegmentedControlBorderTypeTop = 1 << 0,
+    K9SegmentedControlBorderTypeLeft = 1 << 1,
+    K9SegmentedControlBorderTypeBottom = 1 << 2,
+    K9SegmentedControlBorderTypeRight = 1 << 3
+};
+
 @interface K9SegmentedControlStyle : NSObject <NSMutableCopying>
 
-@property (nonatomic, strong)   UIColor         *segmentColor;
-@property (nonatomic, strong)   UIColor         *highlightedSegmentColor;
-@property (nonatomic, strong)   UIColor         *selectedSegmentColor;
+@property (nonatomic, strong)   UIColor                         *segmentColor;
+@property (nonatomic, strong)   UIColor                         *highlightedSegmentColor;
+@property (nonatomic, strong)   UIColor                         *selectedSegmentColor;
 
-@property (nonatomic, strong)   UIColor         *titleColor;
-@property (nonatomic, strong)   UIColor         *highlightedTitleColor;
-@property (nonatomic, strong)   UIColor         *selectedTitleColor;
+@property (nonatomic, strong)   UIColor                         *titleColor;
+@property (nonatomic, strong)   UIColor                         *highlightedTitleColor;
+@property (nonatomic, strong)   UIColor                         *selectedTitleColor;
 
-@property (nonatomic, strong)   UIFont          *titleFont;
-@property (nonatomic, strong)   UIFont          *highlightedTitleFont;
-@property (nonatomic, strong)   UIFont          *selectedTitleFont;
+@property (nonatomic, strong)   UIFont                          *titleFont;
+@property (nonatomic, strong)   UIFont                          *highlightedTitleFont;
+@property (nonatomic, strong)   UIFont                          *selectedTitleFont;
 
-@property (nonatomic, strong)   UIColor         *indicatorColor;
+@property (nonatomic, strong)   UIColor                         *indicatorColor;
 
-@property (nonatomic, strong)   UIColor         *pointColor;
-@property (nonatomic)           CGFloat         pointLength;
-@property (nonatomic)           UIOffset        pointOffset;
+@property (nonatomic, strong)   UIColor                         *pointColor;
+@property (nonatomic)           CGFloat                         pointLength;
+@property (nonatomic)           UIOffset                        pointOffset;
 
-@property (nonatomic)           NSTimeInterval  indicatorAnimationDuration;
+@property (nonatomic)           CGFloat                         borderWidth;
+@property (nonatomic)           CGFloat                         borderSpacingVertical;
+@property (nonatomic)           CGFloat                         borderSpacingHorizontal;
+@property (nonatomic, strong)   UIColor                         *borderColor;
 
-@property (nonatomic)           BOOL            autoAdjustSegmentWidth;
-@property (nonatomic)           CGFloat         autoSegmentSpacing;
-@property (nonatomic)           CGFloat         autoSegmentWidthRatio;
+@property (nonatomic)           NSTimeInterval                  indicatorAnimationDuration;
 
-@property (nonatomic)           CGFloat         segmentWidth;
+@property (nonatomic)           BOOL                            autoAdjustSegmentWidth;
+@property (nonatomic)           CGFloat                         autoSegmentSpacing;
+@property (nonatomic)           CGFloat                         autoSegmentWidthRatio;
 
-@property (nonatomic)           BOOL            autoAdjustIndicatorWidth;
-@property (nonatomic)           CGFloat         autoIndicatorHeight;
-@property (nonatomic)           CGFloat         autoIndicatorSpacing;
+@property (nonatomic)           CGFloat                         segmentWidth;
 
-@property (nonatomic)           CGSize          indicatorSize;
+@property (nonatomic)           BOOL                            autoAdjustIndicatorWidth;
+@property (nonatomic)           CGFloat                         autoIndicatorHeight;
+@property (nonatomic)           CGFloat                         autoIndicatorSpacing;
+
+@property (nonatomic)           CGSize                          indicatorSize;
 
 - (instancetype)initWithDefaultStyle NS_DESIGNATED_INITIALIZER;
 
@@ -73,6 +87,9 @@
 
 //  If this method is not implemented, the default is NO.
 - (BOOL)segmentedControl:(K9SegmentedControl *)segmentedControl shouldShowPointAtIndex:(NSInteger)index;
+
+//  If this method is not implemented, the default is K9SegmentedControlBorderTypeNone.
+- (K9SegmentedControlBorderType)borderTypeForSegmentedControl:(K9SegmentedControl *)segmentedControl atIndex:(NSInteger)index;
 
 @end
 

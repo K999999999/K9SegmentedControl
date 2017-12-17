@@ -55,10 +55,15 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         _pointLength = 8.f;
         _pointOffset = UIOffsetZero;
         
+        _borderWidth = 1.f;
+        _borderSpacingVertical = 0.f;
+        _borderSpacingHorizontal = 0.f;
+        _borderColor = [UIColor blackColor];
+        
         _indicatorAnimationDuration = .3f;
         
         _autoAdjustSegmentWidth = NO;
-        _autoSegmentSpacing = 20.f;
+        _autoSegmentSpacing = 10.f;
         _autoSegmentWidthRatio = 1.1f;
         
         _segmentWidth = 40.f;
@@ -106,6 +111,10 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     style.pointColor = _pointColor;
     style.pointLength = _pointLength;
     style.pointOffset = _pointOffset;
+    style.borderWidth = _borderWidth;
+    style.borderSpacingVertical = _borderSpacingVertical;
+    style.borderSpacingHorizontal = _borderSpacingHorizontal;
+    style.borderColor = _borderColor;
     style.indicatorAnimationDuration = _indicatorAnimationDuration;
     style.autoAdjustSegmentWidth = _autoAdjustSegmentWidth;
     style.autoSegmentSpacing = _autoSegmentSpacing;
@@ -122,10 +131,14 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
 
 @interface K9SegmentedControlCell : UICollectionViewCell
 
-@property (nonatomic)           UIControlState  state;
-@property (nonatomic, strong)   UILabel         *titleLabel;
-@property (nonatomic, strong)   UIView          *pointView;
-@property (nonatomic, copy)     void            (^stateBlock)(K9SegmentedControlCell *stateCell);
+@property (nonatomic)           UIControlState                  state;
+@property (nonatomic, strong)   UILabel                         *titleLabel;
+@property (nonatomic, strong)   UIView                          *pointView;
+@property (nonatomic)           CGFloat                         borderSpacingVertical;
+@property (nonatomic)           CGFloat                         borderSpacingHorizontal;
+@property (nonatomic)           K9SegmentedControlBorderType    borderType;
+@property (nonatomic, strong)   CAShapeLayer                    *shapeLayer;
+@property (nonatomic, copy)     void                            (^stateBlock)(K9SegmentedControlCell *stateCell);
 
 @end
 
@@ -151,6 +164,41 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     return self;
 }
 
+- (void)layoutSubviews {
+    
+    [super layoutSubviews];
+    
+    if (self.frame.size.width <= 0.f
+        || self.frame.size.height <= 0.f) {
+        return;
+    }
+    
+    CGRect rect = CGRectMake(0.f, 0.f, self.frame.size.width, self.frame.size.height);
+    self.shapeLayer.frame = rect;
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    if (self.borderType & K9SegmentedControlBorderTypeTop) {
+        
+        [path moveToPoint:CGPointMake(self.borderSpacingHorizontal, 0.f)];
+        [path addLineToPoint:CGPointMake(rect.size.width - self.borderSpacingHorizontal, 0.f)];
+    }
+    if (self.borderType & K9SegmentedControlBorderTypeLeft) {
+        
+        [path moveToPoint:CGPointMake(0.f, self.borderSpacingVertical)];
+        [path addLineToPoint:CGPointMake(0.f, rect.size.height - self.borderSpacingVertical)];
+    }
+    if (self.borderType & K9SegmentedControlBorderTypeBottom) {
+        
+        [path moveToPoint:CGPointMake(self.borderSpacingHorizontal, rect.size.height)];
+        [path addLineToPoint:CGPointMake(rect.size.width - self.borderSpacingHorizontal, rect.size.height)];
+    }
+    if (self.borderType & K9SegmentedControlBorderTypeRight) {
+        
+        [path moveToPoint:CGPointMake(rect.size.width, self.borderSpacingVertical)];
+        [path addLineToPoint:CGPointMake(rect.size.width, rect.size.height - self.borderSpacingVertical)];
+    }
+    self.shapeLayer.path = path.CGPath;
+}
+
 - (void)prepareForReuse {
     
     [super prepareForReuse];
@@ -167,6 +215,7 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     self.backgroundColor = [UIColor clearColor];
     [self configTitleLabel];
     [self configPointView];
+    [self configShapeLayer];
 }
 
 - (void)configTitleLabel {
@@ -194,6 +243,15 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         make.right.equalTo(self.titleLabel).with.offset(4.f);
         make.width.height.mas_equalTo(8.f);
     }];
+}
+
+- (void)configShapeLayer {
+    
+    if (self.shapeLayer.superlayer) {
+        return;
+    }
+    
+    [self.contentView.layer addSublayer:self.shapeLayer];
 }
 
 #pragma mark - Setters
@@ -248,6 +306,18 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         _pointView.layer.cornerRadius = 4.f;
     }
     return _pointView;
+}
+
+- (CAShapeLayer *)shapeLayer {
+    
+    if (!_shapeLayer) {
+        
+        _shapeLayer = [CAShapeLayer layer];
+        _shapeLayer.lineWidth = 1.f;
+        _shapeLayer.fillColor = [UIColor clearColor].CGColor;
+        _shapeLayer.strokeColor = [UIColor blackColor].CGColor;
+    }
+    return _shapeLayer;
 }
 
 @end;
@@ -402,14 +472,11 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         [self refreshCell:stateCell indexPath:stateIndexPath];
     };
     [self refreshCell:cell indexPath:indexPath];
-    if (self.style.autoAdjustSegmentWidth) {
+    [cell.titleLabel mas_updateConstraints:^(MASConstraintMaker *make) {
         
-        [cell.titleLabel mas_updateConstraints:^(MASConstraintMaker *make) {
-            
-            make.left.equalTo(cell.contentView).with.offset(floor(self.style.autoSegmentSpacing * .5f));
-            make.right.equalTo(cell.contentView).with.offset(-floor(self.style.autoSegmentSpacing * .5f));
-        }];
-    }
+        make.left.equalTo(cell.contentView).with.offset(self.style.autoAdjustSegmentWidth ? self.style.autoSegmentSpacing : 0.f);
+        make.right.equalTo(cell.contentView).with.offset(self.style.autoAdjustSegmentWidth ? -self.style.autoSegmentSpacing : 0.f);
+    }];
     return cell;
 }
 
@@ -460,11 +527,12 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
 
 - (void)reloadData {
     
-    dispatch_main_async_safe(^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         
         [self handleDataSource];
         [self reloadIndicator];
         [self.collectionView reloadData];
+        [self layoutIfNeeded];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self shouldSelectIndex:self.selectedIndex animated:NO];
         });
@@ -553,6 +621,9 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         [self.widthArray addObject:@(segmentWidth)];
         self.totalWidth += segmentWidth;
     }
+    if (self.selectedIndex >= self.segmentCount) {
+        self.selectedIndex = 0;
+    }
 }
 
 - (void)reloadIndicator {
@@ -605,6 +676,14 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     return NO;
 }
 
+- (K9SegmentedControlBorderType)borderTypeAtIndex:(NSInteger)index {
+    
+    if (self.dataSource && [self.dataSource respondsToSelector:@selector(borderTypeForSegmentedControl:atIndex:)]) {
+        return [self.dataSource borderTypeForSegmentedControl:self atIndex:index];
+    }
+    return K9SegmentedControlBorderTypeNone;
+}
+
 - (CGFloat)getSegmentWidthForAttributedTitle:(NSAttributedString *)attributedTitle {
     
     if (!self.style.autoAdjustSegmentWidth) {
@@ -613,7 +692,7 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     if (0 == attributedTitle.length) {
         return 0.f;
     }
-    return ceil([attributedTitle boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, self.frame.size.height > 0.f ? self.frame.size.height : 20.f) options:NSStringDrawingUsesLineFragmentOrigin context:nil].size.width + self.style.autoSegmentSpacing);
+    return ceil([attributedTitle boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, self.frame.size.height > 0.f ? self.frame.size.height : 20.f) options:NSStringDrawingUsesLineFragmentOrigin context:nil].size.width + self.style.autoSegmentSpacing * 2.f);
 }
 
 - (CGFloat)getIndicatorHeight {
@@ -635,20 +714,25 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     NSInteger targetIndex = [self getIndexForIndicatorXProgress:indicatorXProgress];
     if ((targetIndex + 1) >= self.segmentXArray.count
         || (targetIndex + 1) >= self.widthArray.count) {
-        return [self.widthArray[targetIndex] floatValue] + self.style.autoIndicatorSpacing;
+        return [self.widthArray[targetIndex] floatValue] - self.style.autoIndicatorSpacing * 2.f;
     }
-    return (indicatorX - [self.segmentXArray[targetIndex] floatValue]) * ([self.widthArray[targetIndex + 1] floatValue] - [self.widthArray[targetIndex] floatValue]) / [self.widthArray[targetIndex] floatValue] + [self.widthArray[targetIndex] floatValue] + self.style.autoIndicatorSpacing;
+    return (indicatorX - [self.segmentXArray[targetIndex] floatValue]) * ([self.widthArray[targetIndex + 1] floatValue] - [self.widthArray[targetIndex] floatValue]) / [self.widthArray[targetIndex] floatValue] + [self.widthArray[targetIndex] floatValue] - self.style.autoIndicatorSpacing * 2.f;
 }
 
 - (float)getIndicatorXProgressForIndex:(NSInteger)index {
     
-    if (index >= self.segmentXArray.count) {
+    if (index >= self.segmentXArray.count
+        || index >= self.widthArray.count) {
         return 0.f;
     }
     if (self.totalWidth <= 0.f) {
         return 0.f;
     }
-    return [self.segmentXArray[index] floatValue] / self.totalWidth;
+    if (self.style.autoAdjustIndicatorWidth) {
+        return ([self.segmentXArray[index] floatValue] + self.style.autoIndicatorSpacing) / self.totalWidth;
+    } else {
+        return ([self.segmentXArray[index] floatValue] + ([self.widthArray[index] floatValue] - self.style.indicatorSize.width) * .5f) / self.totalWidth;
+    }
 }
 
 - (NSInteger)getIndexForIndicatorXProgress:(float)indicatorXProgress {
@@ -679,7 +763,11 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         return 0.f;
     }
     float deltaX = (pageProgress - ((float)index / (float)self.segmentCount)) * (float)self.segmentCount * [self.widthArray[index] floatValue];
-    return ([self.segmentXArray[index] floatValue] + deltaX) / self.totalWidth;
+    if (self.style.autoAdjustIndicatorWidth) {
+        return ([self.segmentXArray[index] floatValue] + self.style.autoIndicatorSpacing + deltaX) / self.totalWidth;
+    } else {
+        return ([self.segmentXArray[index] floatValue] + ([self.widthArray[index] floatValue] - self.style.indicatorSize.width) * .5f + deltaX) / self.totalWidth;
+    }
 }
 
 - (float)getPageProgressForIndicatorXProgress:(float)indicatorXProgress {
@@ -690,6 +778,11 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         return 0.f;
     }
     float deltaX = self.totalWidth * indicatorXProgress - [self.segmentXArray[index] floatValue];
+    if (self.style.autoAdjustIndicatorWidth) {
+        deltaX -= self.style.autoIndicatorSpacing;
+    } else {
+        deltaX -= ([self.widthArray[index] floatValue] - self.style.indicatorSize.width) * .5f;
+    }
     return ((float)index + deltaX / [self.widthArray[index] floatValue]) / (float)self.segmentCount;
 }
 
@@ -763,6 +856,12 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     }];
     cell.pointView.hidden = ![self shouldShowPointAtIndex:indexPath.row];
     
+    cell.shapeLayer.lineWidth = self.style.borderWidth;
+    cell.shapeLayer.strokeColor = self.style.borderColor.CGColor;
+    cell.borderSpacingVertical = self.style.borderSpacingVertical;
+    cell.borderSpacingHorizontal = self.style.borderSpacingHorizontal;
+    cell.borderType = [self borderTypeAtIndex:indexPath.row];
+    
     if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didRefreshSegmentAtIndex:state:titleLabel:contentView:)]) {
         [self.delegate segmentedControl:self didRefreshSegmentAtIndex:indexPath.row state:cell.state titleLabel:cell.titleLabel contentView:cell.contentView];
     }
@@ -780,7 +879,11 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         [self.delegate segmentedControl:self willSelectSegmentAtIndex:index];
     }
     if (!animated) {
+        
         [self moveIndicatorToIndicatorXProgress:[self getIndicatorXProgressForIndex:index] bySelect:YES];
+        if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didSelectSegmentAtIndex:)]) {
+            [self.delegate segmentedControl:self didSelectSegmentAtIndex:index];
+        }
     } else {
         
         self.fromProgress = [self.collectionView convertRect:self.indicatorView.frame fromView:self.indicatorView.superview].origin.x / self.totalWidth;
