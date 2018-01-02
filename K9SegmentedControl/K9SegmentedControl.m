@@ -413,7 +413,6 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         
         _displayLink.paused = YES;
         [_displayLink invalidate];
-        [_displayLink removeFromRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
         _displayLink = nil;
     }
 }
