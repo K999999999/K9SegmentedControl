@@ -405,7 +405,9 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     }
 }
 
-- (void)dealloc {
+- (void)removeFromSuperview {
+    
+    [super removeFromSuperview];
     
     if (_displayLink) {
         
