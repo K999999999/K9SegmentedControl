@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "K9SegmentedControl"
-  s.version      = "0.4"
+  s.version      = "0.5"
   s.summary      = "K9SegmentedControl"
   s.description  = "A common Segmented Control."
   s.homepage     = "https://github.com/K999999999/K9SegmentedControl"

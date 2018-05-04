@@ -846,11 +846,10 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
 
 - (void)refreshCellAfterDidSelect {
     
+    [self.collectionView reloadData];
     K9SegmentedControlCell *cell = (K9SegmentedControlCell *)[self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:self.selectedIndex inSection:0]];
     if (cell) {
         
-        cell.contentView.backgroundColor = self.style.selectedSegmentColor;
-        cell.titleLabel.attributedText = [self.selectedTitleDic objectForKey:@(self.selectedIndex)];
         if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didRefreshSegmentAtIndex:state:titleLabel:contentView:)]) {
             [self.delegate segmentedControl:self didRefreshSegmentAtIndex:self.selectedIndex state:UIControlStateSelected titleLabel:cell.titleLabel contentView:cell.contentView];
         }
