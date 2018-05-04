@@ -131,29 +131,18 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
 
 @interface K9SegmentedControlCell : UICollectionViewCell
 
-@property (nonatomic)           UIControlState                  state;
 @property (nonatomic, strong)   UILabel                         *titleLabel;
 @property (nonatomic, strong)   UIView                          *pointView;
 @property (nonatomic)           CGFloat                         borderSpacingVertical;
 @property (nonatomic)           CGFloat                         borderSpacingHorizontal;
 @property (nonatomic)           K9SegmentedControlBorderType    borderType;
 @property (nonatomic, strong)   CAShapeLayer                    *shapeLayer;
-@property (nonatomic, copy)     void                            (^stateBlock)(K9SegmentedControlCell *stateCell);
 
 @end
 
 @implementation K9SegmentedControlCell
 
 #pragma mark - Life Cycle
-
-- (instancetype)init {
-    
-    self = [super init];
-    if (self) {
-        _state = UIControlStateNormal;
-    }
-    return self;
-}
 
 - (instancetype)initWithFrame:(CGRect)frame {
     
@@ -205,7 +194,6 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     
     self.titleLabel.attributedText = nil;
     self.pointView.hidden = YES;
-    self.stateBlock = nil;
 }
 
 #pragma mark - Config Views
@@ -252,36 +240,6 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     }
     
     [self.contentView.layer addSublayer:self.shapeLayer];
-}
-
-#pragma mark - Setters
-
-- (void)setHighlighted:(BOOL)highlighted {
-    
-    [super setHighlighted:highlighted];
-    if (highlighted) {
-        self.state = self.state | UIControlStateHighlighted;
-    } else {
-        self.state = self.state & !UIControlStateHighlighted;
-    }
-}
-
-- (void)setSelected:(BOOL)selected {
-    
-    [super setSelected:selected];
-    if (selected) {
-        self.state = self.state | UIControlStateSelected;
-    } else {
-        self.state = self.state & !UIControlStateSelected;
-    }
-}
-
-- (void)setState:(UIControlState)state {
-    
-    _state = state;
-    if (self.stateBlock) {
-        self.stateBlock(self);
-    }
 }
 
 #pragma mark - Getters
@@ -463,21 +421,27 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     if (indexPath.row >= self.segmentCount) {
         return nil;
     }
-    
     K9SegmentedControlCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([K9SegmentedControlCell class]) forIndexPath:indexPath];
-    __weak typeof(self)weakSelf = self;
-    cell.stateBlock = ^(K9SegmentedControlCell *stateCell) {
+    BOOL isSelected = (indexPath.row == self.selectedIndex);
+    if (isSelected) {
         
-        __strong typeof(weakSelf)self = weakSelf;
-        NSIndexPath *stateIndexPath = [self.collectionView indexPathForCell:stateCell];
-        [self refreshCell:stateCell indexPath:stateIndexPath];
-    };
-    [self refreshCell:cell indexPath:indexPath];
+        cell.contentView.backgroundColor = self.style.selectedSegmentColor;
+        cell.titleLabel.attributedText = [self.selectedTitleDic objectForKey:@(indexPath.row)];
+    } else {
+        
+        cell.contentView.backgroundColor = self.style.segmentColor;
+        cell.titleLabel.attributedText = [self.normalTitleDic objectForKey:@(indexPath.row)];
+    }
+    if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didRefreshSegmentAtIndex:state:titleLabel:contentView:)]) {
+        [self.delegate segmentedControl:self didRefreshSegmentAtIndex:indexPath.row state:isSelected ? UIControlStateSelected : UIControlStateNormal titleLabel:cell.titleLabel contentView:cell.contentView];
+    }
     [cell.titleLabel mas_updateConstraints:^(MASConstraintMaker *make) {
         
         make.left.equalTo(cell.contentView).with.offset(self.style.autoAdjustSegmentWidth ? self.style.autoSegmentSpacing : 0.f);
         make.right.equalTo(cell.contentView).with.offset(self.style.autoAdjustSegmentWidth ? -self.style.autoSegmentSpacing : 0.f);
     }];
+    [self refreshPointForCell:cell indexPath:indexPath];
+    [self refreshBorderForCell:cell indexPath:indexPath];
     return cell;
 }
 
@@ -491,6 +455,40 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     return CGSizeMake([self.widthArray[indexPath.row] floatValue], self.frame.size.height);
 }
 
+- (void)collectionView:(UICollectionView *)collectionView didHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    K9SegmentedControlCell *cell = (K9SegmentedControlCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    if (cell) {
+        
+        cell.contentView.backgroundColor = self.style.highlightedSegmentColor;
+        cell.titleLabel.attributedText = [self.highlightedTitleDic objectForKey:@(indexPath.row)];
+        if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didRefreshSegmentAtIndex:state:titleLabel:contentView:)]) {
+            [self.delegate segmentedControl:self didRefreshSegmentAtIndex:indexPath.row state:UIControlStateHighlighted titleLabel:cell.titleLabel contentView:cell.contentView];
+        }
+    }
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didUnhighlightItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    BOOL isSelected = (indexPath.row == self.selectedIndex);
+    K9SegmentedControlCell *cell = (K9SegmentedControlCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    if (cell) {
+        
+        if (isSelected) {
+            
+            cell.contentView.backgroundColor = self.style.selectedSegmentColor;
+            cell.titleLabel.attributedText = [self.selectedTitleDic objectForKey:@(indexPath.row)];
+        } else {
+            
+            cell.contentView.backgroundColor = self.style.segmentColor;
+            cell.titleLabel.attributedText = [self.normalTitleDic objectForKey:@(indexPath.row)];
+        }
+        if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didRefreshSegmentAtIndex:state:titleLabel:contentView:)]) {
+            [self.delegate segmentedControl:self didRefreshSegmentAtIndex:indexPath.row state:isSelected ? UIControlStateSelected : UIControlStateNormal titleLabel:cell.titleLabel contentView:cell.contentView];
+        }
+    }
+}
+
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     
     if (indexPath.row >= self.segmentCount) {
@@ -498,6 +496,21 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     }
     self.selectedIndex = indexPath.row;
     [self shouldSelectIndex:self.selectedIndex animated:YES];
+    K9SegmentedControlCell *cell = (K9SegmentedControlCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    [self refreshPointForCell:cell indexPath:indexPath];
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didDeselectItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    K9SegmentedControlCell *cell = (K9SegmentedControlCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    if (cell) {
+        
+        cell.contentView.backgroundColor = self.style.segmentColor;
+        cell.titleLabel.attributedText = [self.normalTitleDic objectForKey:@(indexPath.row)];
+        if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didRefreshSegmentAtIndex:state:titleLabel:contentView:)]) {
+            [self.delegate segmentedControl:self didRefreshSegmentAtIndex:indexPath.row state:UIControlStateNormal titleLabel:cell.titleLabel contentView:cell.contentView];
+        }
+    }
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
@@ -505,7 +518,6 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     if (!self.needMove) {
         return;
     }
-    
     self.needMove = NO;
     [self moveIndicatorToIndicatorXProgress:self.targetIndicatorXProgress];
 }
@@ -579,6 +591,7 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didSelectSegmentAtIndex:)]) {
             [self.delegate segmentedControl:self didSelectSegmentAtIndex:self.selectedIndex];
         }
+        [self refreshCellAfterDidSelect];
     } else {
         [self moveIndicatorToIndicatorXProgress:indicatorXProgress bySelect:NO];
     }
@@ -831,22 +844,24 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
     self.indicatorView.frame = [self convertRect:newFrame fromView:self.collectionView];
 }
 
-- (void)refreshCell:(K9SegmentedControlCell *)cell indexPath:(NSIndexPath *)indexPath {
+- (void)refreshCellAfterDidSelect {
     
-    if (cell.state & UIControlStateHighlighted) {
-        
-        cell.contentView.backgroundColor = self.style.highlightedSegmentColor;
-        cell.titleLabel.attributedText = [self.highlightedTitleDic objectForKey:@(indexPath.row)];
-    } else if (cell.state & UIControlStateSelected) {
+    K9SegmentedControlCell *cell = (K9SegmentedControlCell *)[self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:self.selectedIndex inSection:0]];
+    if (cell) {
         
         cell.contentView.backgroundColor = self.style.selectedSegmentColor;
-        cell.titleLabel.attributedText = [self.selectedTitleDic objectForKey:@(indexPath.row)];
-    } else {
-        
-        cell.contentView.backgroundColor = self.style.segmentColor;
-        cell.titleLabel.attributedText = [self.normalTitleDic objectForKey:@(indexPath.row)];
+        cell.titleLabel.attributedText = [self.selectedTitleDic objectForKey:@(self.selectedIndex)];
+        if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didRefreshSegmentAtIndex:state:titleLabel:contentView:)]) {
+            [self.delegate segmentedControl:self didRefreshSegmentAtIndex:self.selectedIndex state:UIControlStateSelected titleLabel:cell.titleLabel contentView:cell.contentView];
+        }
     }
+}
+
+- (void)refreshPointForCell:(K9SegmentedControlCell *)cell indexPath:(NSIndexPath *)indexPath {
     
+    if (!cell) {
+        return;
+    }
     cell.pointView.backgroundColor = self.style.pointColor;
     cell.pointView.layer.cornerRadius = self.style.pointLength * .5f;
     [cell.pointView mas_updateConstraints:^(MASConstraintMaker *make) {
@@ -856,16 +871,18 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         make.width.height.mas_equalTo(self.style.pointLength);
     }];
     cell.pointView.hidden = ![self shouldShowPointAtIndex:indexPath.row];
+}
+
+- (void)refreshBorderForCell:(K9SegmentedControlCell *)cell indexPath:(NSIndexPath *)indexPath {
     
+    if (!cell) {
+        return;
+    }
     cell.shapeLayer.lineWidth = self.style.borderWidth;
     cell.shapeLayer.strokeColor = self.style.borderColor.CGColor;
     cell.borderSpacingVertical = self.style.borderSpacingVertical;
     cell.borderSpacingHorizontal = self.style.borderSpacingHorizontal;
     cell.borderType = [self borderTypeAtIndex:indexPath.row];
-    
-    if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didRefreshSegmentAtIndex:state:titleLabel:contentView:)]) {
-        [self.delegate segmentedControl:self didRefreshSegmentAtIndex:indexPath.row state:cell.state titleLabel:cell.titleLabel contentView:cell.contentView];
-    }
 }
 
 - (void)shouldSelectIndex:(NSUInteger)index animated:(BOOL)animated {
@@ -885,6 +902,7 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didSelectSegmentAtIndex:)]) {
             [self.delegate segmentedControl:self didSelectSegmentAtIndex:index];
         }
+        [self refreshCellAfterDidSelect];
     } else {
         
         self.fromProgress = [self.collectionView convertRect:self.indicatorView.frame fromView:self.indicatorView.superview].origin.x / self.totalWidth;
@@ -892,8 +910,12 @@ K9ColorFromHexWithAlpha(hexValue,1.f)
         self.animationProgress = 0.f;
         if (self.toProgress - self.fromProgress != 0.f) {
             self.displayLink.paused = NO;
-        } else if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didSelectSegmentAtIndex:)]) {
-            [self.delegate segmentedControl:self didSelectSegmentAtIndex:index];
+        } else {
+            
+            if (self.delegate && [self.delegate respondsToSelector:@selector(segmentedControl:didSelectSegmentAtIndex:)]) {
+                [self.delegate segmentedControl:self didSelectSegmentAtIndex:index];
+            }
+            [self refreshCellAfterDidSelect];
         }
     }
 }
